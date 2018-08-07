@@ -29,8 +29,9 @@
   "scripts": {
     "prepublishOnly": "node_modules/.bin/gulp build",
     "build": "node_modules/.bin/gulp build",
-    "start": "node ./bin/kong-dashboard start",
-    "test": "./tests/run.js"
+    "start": "node ./bin/kong-dashboard start --kong-url=http://192.168.0.4:8001",
+    "test": "./tests/run.js",
+    "dev": "node_modules/.bin/gulp build && node ./bin/kong-dashboard start --kong-url=http://192.168.0.4:8001"
   },
   "devDependencies": {
     "angular": "^1.6.6",

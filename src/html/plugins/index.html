@@ -3,12 +3,24 @@
         <i class="material-icons">add</i>
     </a>
 
+    <a href="#!/plugins/add" id="newPlugin" class="btn-floating btn-large waves-effect waves-light right">
+        <i class="material-icons">add</i>
+    </a>
+
+    <a href="#!/plugins/add" id="newPlugin" class="btn-floating btn-large waves-effect waves-light right">
+        <i class="material-icons">add</i>
+    </a>
+
     <h3 class="header" ng-hide="owner_type">Plugins</h3>
     <h3 class="header" ng-show="owner_type=='API'">
         Plugins of API "<a href="#!/apis/{{owner.id}}">{{owner.name}}</a>"
     </h3>
     <h3 class="header" ng-show="owner_type==='Consumer'">
         Plugins of consumer "<a href="#!/consumers/{{owner.id}}">{{owner.username}}</a>"
+    </h3>
+
+    <h3 class="header" ng-show="owner_type==='Service'">
+        Plugins of service"<a href="#!/service/{{owner.id}}">{{owner.name}}</a>"
     </h3>
 
     <p class="flow-text center" ng-show="total === null" style="margin-top:50px;">
@@ -39,6 +51,8 @@
             <th>Name</th>
             <th>API</th>
             <th>Consumer</th>
+            <th>Service</th>
+            <th>Route</th>
             <th>Status</th>
             <th>Created</th>
             <th></th>
@@ -56,6 +70,14 @@
                 <a ng-if="plugin.consumer_id" href="#!/consumers/{{plugin.consumer_id}}">{{plugin.consumer_username}}</a>
                 <span ng-if="!plugin.consumer_id">All</span>
             </td>
+            <td>
+                <a ng-if="plugin.service_id" href="#!/services/{{plugin.service_id}}">{{plugin.service_name}}</a>
+                <span ng-if="!plugin.sercice_id">All</span>
+            </td>
+            <td>
+                    <a ng-if="plugin.route_id" href="#!/route/{{plugin.routee_id}}">{{plugin.route_id}}</a>
+                    <span ng-if="!plugin.route_id">All</span>
+                </td>
             <td>
                 <div class="switch">
                     <label>

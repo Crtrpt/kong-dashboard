@@ -1,0 +1,71 @@
+<div class="container" infinite-scroll="loadMore()" infinite-scroll-distance="5" infinite-scroll-use-document-bottom="true">
+    <a href="#!/routes/add" id="newRoutes" class="btn-floating btn-large waves-effect waves-light right">
+        <i class="material-icons">add</i>
+    </a>
+
+    <h3 class="header" ng-hide="owner_type">Routes</h3>
+
+    <h3 class="header" ng-show="owner_type==='Service'">
+        Routes of service "<a href="#!/service/{{owner.id}}">{{owner.name}}</a>"
+    </h3>
+
+    <p class="flow-text center" ng-show="total === null" style="margin-top:50px;">
+        <app-loader></app-loader>
+    </p>
+
+    <div class  style="margin-top:50px;">
+        <p class="flow-text center" ng-show="owner_type=='Service'">
+            This Service doesn't have any plugin configured yet.
+        </p>
+        <!-- <p class="center" ng-show="total == 0">
+            <a href="#!/routes/add" class="waves-effect waves-light btn">
+                <i class="material-icons left">add_box</i>
+                Add Routes
+            </a>
+        </p> -->
+    </div>
+
+    <table class="bordered" >
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>ServiceName</th>
+            <th>ServiceID</th>
+            <td></td>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr ng-repeat="route in routes">
+            <td>{{route.id}}</td>
+            <td>{{route.service_name}}</td>
+            <td>{{route.service_id}}</td>
+            <td class="right">
+                <a class="btn-floating waves-effect waves-light blue" href="#!/routes/{{route.id}}/plugins">
+                        <i class="material-icons">extension</i>
+                    /a>
+                <a class="btn-floating waves-effect waves-light blue" href="#!/routes/{{route.id}}/plugins/add">
+                        <i class="material-icons">add</i>
+                </a>
+                <a class="btn-floating waves-effect waves-light" href="#!/routes/{{route.id}}">
+                    <i class="material-icons">mode_edit</i>
+                </a>
+                <a class="btn-floating waves-effect waves-light red modal-trigger" ng-click="showDeleteModal(route.id, route.id)">
+                    <i class="material-icons">delete</i>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Structure -->
+<div id="deleteRoute" class="modal">
+    <div class="modal-content">
+        <h5>Do you really want to delete the route "{{current.name}}"?</h5>
+    </div>
+    <div class="modal-footer">
+        <a class="waves-effect waves-green btn" ng-click="abortDelete()">Noooooo!</a>
+        <a class="waves-effect waves-red btn red" ng-click="performDelete()" style="margin-right:10px">Yes</a>
+    </div>
+</div>
