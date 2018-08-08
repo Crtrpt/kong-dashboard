@@ -35,6 +35,7 @@ angular.module('app').controller("RoutesController",
             $scope.total += collection.total;
             $scope.offset = collection.offset ? collection.offset : null;
             angular.forEach($scope.routes, function(route) {
+
                 if (route.service.id) {
                     Kong.get('/services/' + route.service.id).then(function(service) {
                         route.service_name = service.name;

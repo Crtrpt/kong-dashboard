@@ -30,7 +30,10 @@
         <tr>
             <th>ID</th>
             <th>ServiceName</th>
-            <th>ServiceID</th>
+            <!-- <th>ServiceID</th> -->
+            <th>Methods</th>
+            <th>hosts</th>
+            <th>paths</th>
             <td></td>
         </tr>
         </thead>
@@ -39,11 +42,14 @@
         <tr ng-repeat="route in routes">
             <td>{{route.id}}</td>
             <td>{{route.service_name}}</td>
-            <td>{{route.service_id}}</td>
+            <!-- <td>{{route.service_id}}</td> -->
+            <th>{{route.methods}}</th>
+            <th>{{route.hosts}}</th>
+            <th>{{route.paths}}</th>
             <td class="right">
                 <a class="btn-floating waves-effect waves-light blue" href="#!/routes/{{route.id}}/plugins">
                         <i class="material-icons">extension</i>
-                    /a>
+                </a>
                 <a class="btn-floating waves-effect waves-light blue" href="#!/routes/{{route.id}}/plugins/add">
                         <i class="material-icons">add</i>
                 </a>

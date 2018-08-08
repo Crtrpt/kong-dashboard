@@ -44,6 +44,12 @@ angular.module('app').controller("ServicesController", ["$scope", "Kong", functi
                     $scope.apis.splice(index, 1);
                 }
             });
+        },function (response) {
+            if (response.status == 400 || response.status == 409) {
+                $scope.errors = response.data;
+            } else {
+                Alert.error(response.message);
+            }
         });
     }
 }]);

@@ -154,16 +154,24 @@
         templateUrl: 'html/routes/form.html',
         controller: 'RouteController',
         resolve: {
-          api: function() {return {}}
+          route: function() {
+            return null;
+          },
+          services: ['Kong', '$location', function(Kong) {
+            return Kong.get('/services?size=1000');
+          }]
         }
       })
       .when('/routes/:id', {
         templateUrl: 'html/routes/form.html',
-        controller: 'RoutesController',
+        controller: 'RouteController',
         resolve: {
-          api: ['Kong', '$route', function (Kong, $route) {
+          route: ['Kong', '$route', function (Kong, $route) {
             var id = $route.current.params.id;
-            return Kong.get('/routes/' + id)
+            return Kong.get('/routes/' + id);
+          }],
+          services: ['Kong', '$location', function(Kong) {
+            return Kong.get('/services?size=1000');
           }]
         }
       })

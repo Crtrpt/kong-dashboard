@@ -1,7 +1,12 @@
-angular.module('app').controller("RouteController", ["$scope", "Kong", "$location", "$routeParams", "plugins", "apis", "consumers", "plugin", "Alert", "$route", function ($scope, Kong, $location, $routeParams, plugins, apis, consumers, plugin, Alert, $route)
+angular.module('app').controller("RouteController",
+         ["$scope", "Kong", "$location", "$routeParams","route", "services", "Alert", "$route","env",
+ function ($scope, Kong, $location, $routeParams,route,services, Alert, $route,env)
 {
+
+    console.log(route);
+    $scope.schema = env.schemas.route;
     var mode;
-    if (plugin) {
+    if (route) {
         $scope.title = "Edit Route";
         $scope.action = "Save";
         mode = 'edit';
@@ -9,149 +14,89 @@ angular.module('app').controller("RouteController", ["$scope", "Kong", "$locatio
         $scope.title = "Add Route";
         $scope.action = "Add";
         mode = 'create';
+        
     }
 
-    var enabledPlugins = Array.isArray(plugins.enabled_plugins) ?
-      plugins.enabled_plugins :
-      Object.keys(plugins.enabled_plugins); // Happens with kong 0.9.0. See issue #52
+    var servicesOptions = {};
 
-    var apisOptions = {'All': null};
-    apis.data.forEach(function(api) {
-        apisOptions[api.name] = api.id
+    services.data.forEach(function(service) {
+        servicesOptions[service.name] = service.id;
     });
-    var consumerOptions = {'All': null};
-    consumers.data.forEach(function(consumer) {
-        consumerOptions[consumer.username] = consumer.id
-    });
+    $scope.schema.properties.services.enum=servicesOptions;
 
-    $scope.schema = {
-        properties: {
-            'api_id': {
-                required: false,
-                type: 'string',
-                'enum': apisOptions,
-                label: 'Which API(s) should this plugin apply to?'
-            },
-            'name': {
-                required: true,
-                type: 'string',
-                'enum': enabledPlugins.sort(),
-                label: 'Plugin',
-                readonly: mode === 'edit'
-            }
+    // $scope.$watch($scope.route.paths, function($r){
+    //     console.log($r);
+    // });
+    $scope.route = route || {};
+    console.log("=============================");
+    console.log($scope);
+
+
+    $scope.$watch("route.hosts",function(hosts){
+       if((typeof hosts)=="string"){
+            $scope.route.hosts=hosts.split(",");
+       }
+    })
+
+    $scope.$watch("route.services",function(service){
+        if((typeof hosts)=="string"){
+            $scope.route.service.id=service;
         }
-    };
-    $scope.plugin = plugin || {};
-    if (!$scope.plugin.api_id) {
-        $scope.plugin.api_id = null;
-    }
+     })
 
-    $scope.errors = {};
-
-    $scope.$watch('plugin.name', loadSchema);
-
-    $scope.consumers = consumers;
-    $scope.mode = plugin ? 'edit' : 'create';
+    $scope.$watch("route.paths",function(paths){
+        if((typeof paths)=="string"){
+            $scope.route.paths=paths.split(",");
+        }
+     })
 
     $scope.save = function () {
-        var plugin = angular.copy($scope.plugin);
-        if (!$scope.plugin.api_id) {
-            // Kong 0.9.x will fail if the body payload contains {api_id: null}
-            delete $scope.plugin.api_id;
-        }
-        if (!$scope.plugin.name) {
-            Alert.error("You must choose a plugin.");
-            return;
-        }
-        var endpoint = '/plugins';
-        var data = $scope.plugin;
+        var route = angular.copy($scope.route);
+        var data = $scope.route; 
+        // console.log(data);
+        // service={id:data.service};
+        // data.service={id:data.services};
+        // data.hosts= data.hosts.split(",");
+        // delete data.services;
+        // data.paths= data.paths.split(",");
 
-        Kong.put(endpoint, data).then(function (response) {
-            Alert.success('Plugin saved!');
-            $route.reload();
-        }, function (response) {
-            if (!response) {
-                // unexpected error message already displayed by Kong service.
-                return;
-            }
-            if (response.status == 400 || response.status == 409) {
-                $scope.errors = Kong.unflattenErrorResponse(response.data);
-            } else {
-                Alert.error('Unexpected error from Kong');
-                console.log(response);
-            }
-        });
-    };
-
-    function loadSchema(pluginName) {
-        if (typeof pluginName === 'undefined') {
-            return;
-        }
-        $scope.plugin_schema_loaded = false;
-        $scope.plugin_schema_loading = true;
-        Kong.get('/plugins/schema/' + $scope.plugin.name).then(function (response) {
-
-            delete($scope.schema.properties.consumer_id);
-            delete($scope.schema.properties.config);
-
-            if (!response.no_consumer) {
-                $scope.schema.properties.consumer_id = {
-                    required: false,
-                    type: 'string',
-                    'enum': consumerOptions,
-                    label: 'Apply to'
+        if($scope.route.id){
+            var endpoint = '/routes/'+$scope.route.id;
+          
+            Kong.patch(endpoint, data).then(function (response) {
+                Alert.success('Route saved!');
+                $route.reload();
+            }, function (response) {
+                if (!response) {
+                    // unexpected error message already displayed by Kong service.
+                    return;
                 }
-            } else {
-                delete $scope.schema.properties.consumer_id;
-                delete $scope.plugin.consumer_id;
-            }
-
-            $scope.schema.properties.config = convertPluginSchema(response);
-            $scope.plugin_schema_loaded = true;
-            $scope.plugin_schema_loading = false;
-            if ($scope.mode === 'create') {
-                $scope.plugin.config = {};
-            }
-
-            $scope.errors = {};
-        });
-    };
-
-    /**
-     * Convert a "kong" schema to a schema compatible with http://json-schema.org
-     * @param schema
-     */
-    function convertPluginSchema(schema) {
-        var result = {properties: {}, type: 'object'};
-        Object.keys(schema.fields).forEach(function(propertyName) {
-            result.properties[propertyName] = {
-                type: schema.fields[propertyName].type
-            };
-            if (schema.fields[propertyName].enum) {
-                result.properties[propertyName].enum = schema.fields[propertyName].enum;
-            }
-            if (schema.fields[propertyName].hasOwnProperty('default')) {
-                result.properties[propertyName].default = schema.fields[propertyName].default;
-            }
-            if (schema.fields[propertyName].hasOwnProperty('required')) {
-                result.properties[propertyName].required = schema.fields[propertyName].required;
-            }
-            if (result.properties[propertyName].type === 'table') {
-                result.properties[propertyName].type = 'object';
-                if (schema.fields[propertyName].schema.flexible) {
-                    result.properties[propertyName].additionalProperties = convertPluginSchema(schema.fields[propertyName].schema);
+                if (response.status == 400 || response.status == 409) {
+                    $scope.errors = Kong.unflattenErrorResponse(response.data);
                 } else {
-                    result.properties[propertyName].properties = convertPluginSchema(schema.fields[propertyName].schema).properties;
+                    Alert.error('Unexpected error from Kong');
+                    console.log(response);
                 }
-            }
-
-            if (result.properties[propertyName].type === 'array') {
-                // by default, assuming the elements of a property of type array is a string, since it's
-                // the case most of the time, and Kong doesn't provide the types of the elements of array properties :(
-                result.properties[propertyName].items = {type: 'string'}
-            }
-
-        });
-        return result;
-    }
+            });
+        }else{
+          
+            var endpoint = '/routes';  
+            Kong.post(endpoint, data).then(function (response) {
+                Alert.success('Route saved!');
+                $route.reload();
+            }, function (response) {
+                if (!response) {
+                    // unexpected error message already displayed by Kong service.
+                    return;
+                }
+                if (response.status == 400 || response.status == 409) {
+                    $scope.errors = Kong.unflattenErrorResponse(response.data);
+                } else {
+                    Alert.error('Unexpected error from Kong');
+                    console.log(response);
+                }
+            });
+        }
+       
+    };
 }]);

@@ -2,8 +2,8 @@ angular.module('app').controller("ServiceController", ["$scope", "Kong", "$route
 {
 
 
-
     $scope.schema = env.schemas.service;
+
     $scope.errors = {};
     if ($routeParams.id) {
         $scope.service = service;
@@ -16,23 +16,49 @@ angular.module('app').controller("ServiceController", ["$scope", "Kong", "$route
     }
  
     $scope.save = function () {
-        Kong.post('/services', $scope.service).then(function () {
-            if ($routeParams.id) {
-                Alert.success('Service updated');
-            } else {
-                Alert.success('Service created');
-                // clearing inputs.
-                $scope.api = {};
-            }
-            // clearing errors.
-            $scope.errors = {};
-        }, function (response) {
-            if (response.status == 400 || response.status == 409) {
-                $scope.errors = response.data;
-            } else {
-                Alert.error('Unexpected error from Kong');
-                console.log(response);
-            }
-        });
+        console.log($scope.service);
+        var endpoiont="/services";
+        if($scope.service.id){
+            endpoiont="/services/"+$scope.service.id;
+            delete $scope.service.id;
+            Kong.patch( endpoiont, $scope.service).then(function () {
+                if ($routeParams.id) {
+                    Alert.success('Service updated');
+                } else {
+                    Alert.success('Service created');
+                    // clearing inputs.
+                    $scope.api = {};
+                }
+                // clearing errors.
+                $scope.errors = {};
+            }, function (response) {
+                if (response.status == 400 || response.status == 409) {
+                    $scope.errors = response.data;
+                } else {
+                    Alert.error('Unexpected error from Kong');
+                    console.log(response);
+                }
+            });
+        }else{
+            Kong.post( endpoiont, $scope.service).then(function () {
+                if ($routeParams.id) {
+                    Alert.success('Service updated');
+                } else {
+                    Alert.success('Service created');
+                    // clearing inputs.
+                    $scope.api = {};
+                }
+                // clearing errors.
+                $scope.errors = {};
+            }, function (response) {
+                if (response.status == 400 || response.status == 409) {
+                    $scope.errors = response.data;
+                } else {
+                    Alert.error('Unexpected error from Kong');
+                    console.log(response);
+                }
+            });
+        }
+       
     }
 }]);
